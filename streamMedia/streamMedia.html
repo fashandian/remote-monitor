@@ -1,0 +1,48 @@
+<!--
+ * @Date: 2019-10-19 22:57:05
+ * @LastEditors: fashandian
+ * @LastEditTime: 2019-10-19 23:36:03
+ -->
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <title>Remote Stream Media</title>
+    </head>
+    <body>
+        <!--video用于显示媒体设备的视频流，自动播放 muted-->
+        <video id="video" autoplay></video>
+        <script>
+            const electron = require('electron');
+            const { desktopCapturer } = electron;
+            // type: window是窗口，screen是屏幕
+            desktopCapturer.getSources({ types: ['screen'] }, async function(
+                error,
+                sources
+            ) {
+                if (error) throw error;
+                console.log(sources);
+                navigator.mediaDevices
+                    .getUserMedia({
+                        audio: false,
+                        video: {
+                            mandatory: {
+                                chromeMediaSource: 'desktop',
+                                chromeMediaSourceId: sources[0].id,
+                                minWidth: 1280,
+                                maxWidth: 1920,
+                                minHeight: 720,
+                                maxHeight: 1080
+                            }
+                        }
+                    })
+                    .then(stream => {
+                        console.log(stream.getVideoTracks()[0].label);
+                        document.querySelector('video').srcObject = stream;
+                    })
+                    .catch(error => {
+                        console.log(error);
+                    });
+            });
+        </script>
+    </body>
+</html>
