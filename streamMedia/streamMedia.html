@@ -1,7 +1,7 @@
 <!--
  * @Date: 2019-10-19 22:57:05
  * @LastEditors: fashandian
- * @LastEditTime: 2019-10-20 17:34:12
+ * @LastEditTime: 2019-11-30 00:23:03
  -->
 <!DOCTYPE html>
 <html lang="en">
@@ -15,6 +15,7 @@
             const electron = require('electron');
             const { desktopCapturer } = electron;
             // type: window是窗口，screen是屏幕
+            // 这里暂时有个问题，使用 screen， 第一次打开的时候会报错
             desktopCapturer.getSources({ types: ['screen'] }, async function(
                 error,
                 sources

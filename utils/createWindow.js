@@ -1,7 +1,7 @@
 /*
  * @Date: 2019-10-19 23:07:50
  * @LastEditors: fashandian
- * @LastEditTime: 2019-10-19 23:34:29
+ * @LastEditTime: 2019-11-30 00:14:17
  */
 const electron = require('electron');
 const url = require('url');
@@ -20,6 +20,8 @@ const createWindow = (options, htmlPath) => {
             slashes: true
         })
     );
+    // default open dev tools
+    // newWindow.webContents.openDevTools();
     // garbage collection handle
     newWindow.on('close', () => {
         newWindow = null;
