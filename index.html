@@ -1,7 +1,7 @@
 <!--
  * @Date: 2019-10-17 00:11:10
  * @LastEditors: fashandian
- * @LastEditTime: 2019-10-19 23:16:46
+ * @LastEditTime: 2019-11-30 01:40:30
  -->
 <!DOCTYPE html>
 <html lang="en">
@@ -17,5 +17,79 @@
                 <a class="brand-logo center">Remote Monitor</a>
             </div>
         </nav>
+        <span id="screenshot-path"></span>
+        <button id="screen-shot">click!</button>
+        <script>
+            const { desktopCapturer, shell, ipcRenderer } = require('electron');
+
+            const fs = require('fs');
+            const os = require('os');
+            const path = require('path');
+
+            const screenshot = document.getElementById('screen-shot');
+            const screenshotMsg = document.getElementById('screenshot-path');
+
+            let screenSize;
+
+            screenshot.addEventListener('click', function(event) {
+                screenshotMsg.textContent = 'Gathering screens...';
+                const thumbSize = determineScreenShotSize();
+                let options = {
+                    // 这里的 screen 同样有问题
+                    types: ['screen'],
+                    thumbnailSize: thumbSize
+                };
+
+                desktopCapturer.getSources(options, function(error, sources) {
+                    if (error) return console.log(error);
+
+                    sources.forEach(function(source) {
+                        console.log(source);
+                        if (
+                            source.name === 'Github' ||
+                            source.name === 'Screen 1' ||
+                            source.name === 'Entire Screen'
+                        ) {
+                            const screenshotPath = path.join(
+                                __dirname,
+                                'screenshot.png'
+                            );
+
+                            fs.writeFile(
+                                screenshotPath,
+                                // 转成 png
+                                source.thumbnail.toPNG(),
+                                function(error) {
+                                    if (error) return console.log(error);
+                                    // 调用默认的设备来打开截好的图片
+                                    shell.openExternal(
+                                        'file://' + screenshotPath
+                                    );
+                                    const message = `Saved screenshot to: ${screenshotPath}`;
+                                    screenshotMsg.textContent = message;
+                                }
+                            );
+                        }
+                    });
+                });
+            });
+
+            function determineScreenShotSize() {
+                const maxDimension = Math.max(
+                    screenSize.width,
+                    screenSize.height
+                );
+                return {
+                    // 由于我的电脑使用的是125%的缩放显示，导致实际上获取到的分辨率不足1920，所以需要乘以像素比得到实际像素值
+                    width: maxDimension * window.devicePixelRatio,
+                    height: maxDimension * window.devicePixelRatio
+                };
+            }
+
+            // 由于 electron.screen模块只能用于主进程，因此需要从主进程发送屏幕大小的信息过来
+            ipcRenderer.on('screen', (event, size) => {
+                screenSize = size;
+            });
+        </script>
     </body>
 </html>

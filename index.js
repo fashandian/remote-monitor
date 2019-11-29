@@ -1,7 +1,7 @@
 /*
  * @Date: 2019-10-19 22:19:17
  * @LastEditors: fashandian
- * @LastEditTime: 2019-10-20 13:27:28
+ * @LastEditTime: 2019-11-30 01:42:16
  */
 const electron = require('electron');
 const path = require('path');
@@ -164,6 +164,11 @@ const mainMenuTemplate = (() => {
 })();
 
 app.on('ready', () => {
+    // 貌似 screen 模块必须在 ready 以后才能 require，放到开头会报错
+    const { screen } = electron;
+    // 获取屏幕大小
+    const size = screen.getPrimaryDisplay().workAreaSize;
+
     mainWindow = createWindow(
         {
             webPreferences: {
@@ -177,6 +182,14 @@ app.on('ready', () => {
     mainWindow.on('closed', () => {
         app.quit();
         mainWindow = null;
+    });
+
+    // 在页面加载完成后，发送屏幕大小的消息
+    mainWindow.webContents.on('did-finish-load', () => {
+        mainWindow.webContents.send('screen', {
+            width: size.width,
+            height: size.height
+        });
     });
 
     const mainMenu = Menu.buildFromTemplate(mainMenuTemplate);
